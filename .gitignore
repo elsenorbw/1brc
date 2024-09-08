@@ -4,4 +4,7 @@
 
 c/simple
 c/buffered
+c/profile-me
+
+c/gmon*
 

@@ -9,7 +9,7 @@
 
 #define BLOCK_LIMIT 5000000
 #define MEGABYTE (1024 * 1024)
-#define BLOCK_SIZE MEGABYTE
+#define BLOCK_SIZE (2 * MEGABYTE)
 
 
 typedef struct _somenode {
@@ -21,6 +21,14 @@ typedef struct _somenode {
   struct _somenode *next;
 } TempCountNode;
 
+
+
+int _LocationHash(const char *LocationName)
+{
+  unsigned int *BadThing = (unsigned int *)LocationName;
+  unsigned int result = *BadThing & 0xFFFF;
+  return (int)result;
+}
 
 int LocationHash(const char *LocationName)
 {
@@ -62,7 +70,9 @@ int AddTemperature(TempCountNode **target, const char *Location, int Temp)
       if(Temp < t->min)
       {
         t->min = Temp;
-      } else if (Temp > t->max) {
+      } 
+      else if (Temp > t->max) 
+      {
         t->max = Temp;
       }
       t->total += Temp;
@@ -106,16 +116,6 @@ int StoreTemperature(TempCountNode **HashTable, size_t HashTableLength, const ch
   if(SUCCESS == ErrorStatus)
   {
     HashLocation = LocationHash(Location);
-    if(HashLocation < 0 || (size_t)HashLocation >= HashTableLength)
-    {
-      fprintf(stderr, "error: We generated a hash of %d for %s but the HashTable only has %lu spots\n", HashLocation, Location, HashTableLength);
-      ErrorStatus = BAD_HASH_VALUE;
-    }
-  }
-
-  // and Store it..
-  if(SUCCESS == ErrorStatus)
-  {
     ErrorStatus = AddTemperature(&HashTable[HashLocation], Location, Temp);
   }
 
@@ -212,9 +212,6 @@ int ProcessOneBlock(TempCountNode **HashTable, size_t HashTableLength, size_t *L
 int print_summary(TempCountNode **HashTable, size_t HashTableLength)
 {
   int ErrorStatus = SUCCESS;
-  const char *sep = "";
-
-  fprintf(stdout, "{");
 
   for(size_t i = 0; i < HashTableLength; i++)
   {
@@ -224,15 +221,12 @@ int print_summary(TempCountNode **HashTable, size_t HashTableLength)
       float the_min = t->min / 10.0;
       float the_avg = (t->total / (float)t->count) / 10.0;
       float the_max = t->max / 10.0;
-      fprintf(stdout, "%s%s=%0.1f/%0.1f/%0.1f", sep, t->location, the_min, the_avg, the_max);
-      sep = ", ";
+      fprintf(stdout, "%s=%0.1f/%0.1f/%0.1f\n", t->location, the_min, the_avg, the_max);
 
       // Next one
       t = t->next;
     }
   }
-
-  fprintf(stdout, "}\n");
 
   return ErrorStatus;
 }
@@ -285,7 +279,7 @@ int process_file(const char *filename)
       ErrorStatus = ProcessOneBlock(Summary, sizeof Summary / sizeof *Summary,  &LineCount, Buf, EndOfBlock);
 
       // And copy back the remaining bytes
-      memmove(Buf, EndOfBlock+1, BytesToCopyBack);
+      memcpy(Buf, EndOfBlock+1, BytesToCopyBack);
 
       ++BlockCount; 
     }

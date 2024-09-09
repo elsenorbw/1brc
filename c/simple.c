@@ -3,34 +3,10 @@
 #define SUCCESS 0 
 #define CANNOT_OPEN_FILE 1
 
-typedef struct _somenode {
-  char location[101];
-  unsigned long int count;
-  long int total;
-  int min;
-  int max;
-  struct _somenode *next;
-} TempCountNode;
-
-
-int LocationHash(const char *LocationName)
-{
-  int result = (LocationName[0] << 8) & LocationName[1];
-  return result;
-}
-
-int AddTemperature(TempCountNode **target)
-{
-  
-}
-
-
 int process_file(const char *filename)
 {
   int ErrorStatus = SUCCESS;
   FILE *fp = NULL;
-  // Lazy, using the first 2 bytes as the location hash, should get us down to 2-5 items in each list which is probably good enough
-  TempCountNode *Summary[256*256] = {0};
 
 
   // Open the file 

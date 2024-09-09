@@ -4,7 +4,11 @@
 
 c/simple
 c/buffered
+c/pure
+c/pure2
+c/pure3
 c/profile-me
+c/mem-mapped
 
 c/gmon*
 

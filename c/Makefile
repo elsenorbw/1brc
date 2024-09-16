@@ -1,5 +1,13 @@
 
 
+
+
+posix2: posix2.c
+	gcc -W -Wall -O3 -o posix2 posix2.c
+
+posix1: posix1.c
+	gcc -W -Wall -O3 -o posix1 posix1.c
+
 mem-mapped: mem-mapped.c
 	gcc -W -Wall -O3 -o mem-mapped mem-mapped.c
 
@@ -51,6 +59,13 @@ test3: pure3
 	time ./pure3 | tee answer-pure3.txt
 	hexdump -C answer-pure3.txt > answer-pure3-hex.txt
 
+testp1: posix1
+	time ./posix1 | tee answer-posix1.txt
+	hexdump -C answer-posix1.txt > answer-posix1-hex.txt
+
+testp2: posix2
+	time ./posix2 | tee answer-posix2.txt
+	hexdump -C answer-posix2.txt > answer-posix2-hex.txt
 
 test: test1 test2 test3
 

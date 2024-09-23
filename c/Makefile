@@ -21,6 +21,11 @@ pure3: pure3.c
 	gcc -W -Wall -O3 -o pure3 pure3.c
 
 
+profilep2: posix2
+	perf record -a -g -F 99 ./posix2
+	perf script report flamegraph
+
+
 profile: profileme
 	touch gmon.out
 	touch gmon.out.old

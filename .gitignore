@@ -9,6 +9,11 @@ c/pure2
 c/pure3
 c/profile-me
 c/mem-mapped
+c/posix1
+c/posix2
 
 c/gmon*
+
+perf.data
+
 

@@ -1,4 +1,6 @@
 *.txt
+*.o
+*.beam
 
 1brc-from-internet/
 
@@ -11,6 +13,7 @@ c/profile-me
 c/mem-mapped
 c/posix1
 c/posix2
+c/posix3
 
 c/gmon*
 

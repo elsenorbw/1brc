@@ -1,6 +1,11 @@
 
 
+testp3: posix3
+	time ./posix3 | tee answer-posix3.txt
+	hexdump -C answer-posix3.txt > answer-posix3-hex.txt
 
+posix3: posix3.c
+	gcc -W -Wall -O3 -o posix3 posix3.c hash.o 
 
 posix2: posix2.c
 	gcc -W -Wall -O3 -o posix2 posix2.c
@@ -24,6 +29,9 @@ pure3: pure3.c
 profilep2: posix2
 	perf record -a -g -F 99 ./posix2
 	perf script report flamegraph
+
+hash.o: hash.c hash.h
+	gcc -c -W -Wall -O3 -o hash.o hash.c
 
 
 profile: profileme

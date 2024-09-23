@@ -1,11 +1,23 @@
 
+testp4: posix4
+	time ./posix4 | tee answer-posix4.txt
+	hexdump -C answer-posix4.txt > answer-posix4-hex.txt
 
 testp3: posix3
 	time ./posix3 | tee answer-posix3.txt
 	hexdump -C answer-posix3.txt > answer-posix3-hex.txt
 
+posix4: posix4.c hash.o
+	gcc -W -Wall -O3 -o posix4 posix4.c hash.o 
+
 posix3: posix3.c hash.o
 	gcc -W -Wall -O3 -o posix3 posix3.c hash.o 
+
+posix3-dbg: posix3.c hash.o
+	gcc -W -Wall -O3 -g -o posix3-dbg posix3.c hash.o 
+
+posix3-profile: posix3.c hash-profile.o
+	gcc -W -Wall -pg -l c_p -O3 -o posix3-profile posix3.c hash-profile.o 
 
 posix2: posix2.c
 	gcc -W -Wall -O3 -o posix2 posix2.c
@@ -33,18 +45,23 @@ profilep2: posix2
 hash.o: hash.c hash.h
 	gcc -c -W -Wall -O3 -o hash.o hash.c
 
+hash-profile.o: hash.c hash.h
+	gcc -c -pg -W -Wall -O3 -o hash-profile.o hash.c
 
-profile: profileme
+profile: posix3-profile
 	touch gmon.out
 	touch gmon.out.old
 	rm gmon.out.old
 	mv gmon.out gmon.out.old
-	./profile-me
-	./profile-me
-	./profile-me
-	gprof ./profile-me gmon.out > gmon.txt
+	./posix3-profile
+	./posix3-profile
+	./posix3-profile
+	gprof ./posix3-profile gmon.out > gmon.txt
 	cat gmon.txt
 
+
+profile2: posix3-dbg
+	valgrind 
 
 profileme: pure.c
 	gcc -W -Wall -O3 -pg -o profile-me pure.c

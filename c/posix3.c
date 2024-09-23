@@ -397,6 +397,8 @@ int process_file(const char *filename)
     }
   }
 
+  // Not available on Apple for reasons
+#ifdef POSIX_FADV_WILLNEED
   // Let the kernel know we'll be running through the file in sequential order
   if(SUCCESS == ErrorStatus)
   {
@@ -406,6 +408,7 @@ int process_file(const char *filename)
       ErrorStatus = CANNOT_FADVISE;
     }
   }
+#endif
 
   // Process each line in the file and count them 
   if(SUCCESS == ErrorStatus)

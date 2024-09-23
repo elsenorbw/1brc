@@ -4,7 +4,7 @@ testp3: posix3
 	time ./posix3 | tee answer-posix3.txt
 	hexdump -C answer-posix3.txt > answer-posix3-hex.txt
 
-posix3: posix3.c
+posix3: posix3.c hash.o
 	gcc -W -Wall -O3 -o posix3 posix3.c hash.o 
 
 posix2: posix2.c

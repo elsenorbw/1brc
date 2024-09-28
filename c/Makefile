@@ -1,4 +1,22 @@
 
+
+CC = gcc
+CFLAGS = -W -Wall -O3
+
+
+
+
+HASH_TEST_OBJS = hash_test.o hash.o set.o 
+
+hash_test: $(HASH_TEST_OBJS)
+	$(CC) $(CFLAGS) $(HASH_TEST_OBJS) -o $@
+	./$@
+
+
+testp5: posix5
+	hyperfine ./posix5 2> posix5.stderr.txt > answer-posix5.txt
+	diff answer-posix[45].txt
+
 testp4: posix4
 	time ./posix4 | tee answer-posix4.txt
 	hexdump -C answer-posix4.txt > answer-posix4-hex.txt
@@ -6,6 +24,10 @@ testp4: posix4
 testp3: posix3
 	time ./posix3 | tee answer-posix3.txt
 	hexdump -C answer-posix3.txt > answer-posix3-hex.txt
+
+
+posix5: posix5.c hash.o
+	gcc -W -Wall -O3 -o posix5 posix5.c hash.o 
 
 posix4: posix4.c hash.o
 	gcc -W -Wall -O3 -o posix4 posix4.c hash.o 
@@ -41,9 +63,6 @@ pure3: pure3.c
 profilep2: posix2
 	perf record -a -g -F 99 ./posix2
 	perf script report flamegraph
-
-hash.o: hash.c hash.h
-	gcc -c -W -Wall -O3 -o hash.o hash.c
 
 hash-profile.o: hash.c hash.h
 	gcc -c -pg -W -Wall -O3 -o hash-profile.o hash.c
@@ -98,6 +117,9 @@ testp2: posix2
 	hexdump -C answer-posix2.txt > answer-posix2-hex.txt
 
 test: test1 test2 test3
+
+%.o : %.c
+	$(CC) -c $(CFLAGS) $< -o $@
 
 
 

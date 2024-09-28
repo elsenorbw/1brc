@@ -26,6 +26,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdio.h>
+
 #define get16bits(d) ((((uint32_t)(((const uint8_t *)(d))[1])) << 8)\
                        +(uint32_t)(((const uint8_t *)(d))[0]) )
 uint32_t SuperFastHash (const char * data, int len) {
@@ -65,5 +67,42 @@ uint32_t SuperFastHash (const char * data, int len) {
     hash ^= hash << 25;
     hash += hash >> 6;
     return hash;
+}
+
+
+uint64_t CrapHash(const void *data, int chunks_to_hash)
+{
+  const uint64_t *p = data;
+  uint64_t hash = *p;
+  ++p;
+  --chunks_to_hash;
+  //fprintf(stderr, "interesting: About to hash %s for %d\n", (const char *)data, chunks_to_hash);
+
+
+#if OUTPUT_HEXDUMP
+  const unsigned char *ptr = (const unsigned char *)data;
+  fprintf(stderr, "interesting: Hash bytes: ");
+  for(int i = 0; i < chunks_to_hash * 8; ++i)
+  {
+    unsigned char c = ptr[i];
+    fprintf(stderr, "%02X %c ", c, c);
+  }
+  fprintf(stderr, "\n");
+#endif 
+
+  while(chunks_to_hash > 0)
+  {
+    // Hash this one
+    hash ^= hash << 3;
+    hash ^= *p;
+
+    // next 
+    --chunks_to_hash;
+    ++p;
+  }
+
+  //fprintf(stderr, "%lu=%s\n", hash, (const char *)data);
+
+  return hash;
 }
 

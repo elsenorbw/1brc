@@ -18,6 +18,9 @@ c/posix2
 c/posix3
 c/posix3-dbg
 c/posix4
+c/posix5
+c/hash_test
+
 
 c/gmon*
 

@@ -70,6 +70,26 @@ uint32_t SuperFastHash (const char * data, int len) {
 }
 
 
+#define FNV_OFFSET_BASIS 14695981039346656037u
+#define FNV_PRIME 1099511628211u
+
+
+
+uint64_t FNVHash(const unsigned char *data)
+{
+   uint64_t hash = FNV_OFFSET_BASIS;
+
+   while('\0' != *data)
+   {
+     hash ^= *data;
+     hash *= FNV_PRIME;
+     ++data;
+   }
+
+   return hash;
+}
+
+
 uint64_t CrapHash(const void *data, int chunks_to_hash)
 {
   const uint64_t *p = data;

@@ -29,6 +29,7 @@
 #define THREADS 16 
 
 
+
 typedef struct _somenode {
   char location[108];
   uint64_t location_hash;
@@ -199,10 +200,8 @@ int StoreTemperature(ThreadInfoSpace *ThreadInfo, const char *Location, int Temp
   {
     SlotLocation = LocationSlotCalculator(Location);
     //uint32_t LocationHash = SuperFastHash(Location, strlen(Location));
-    char Buf[108] = {0};
-    strcpy(Buf, Location);
-    uint64_t BadHash = CrapHash(Buf, 13);
-    ErrorStatus = AddTemperature(&ThreadInfo->Summary[SlotLocation], ThreadInfo, Location, BadHash, Temp);
+    uint64_t TheHash = FNVHash(Location);
+    ErrorStatus = AddTemperature(&ThreadInfo->Summary[SlotLocation], ThreadInfo, Location, TheHash, Temp);
   }
 
   return ErrorStatus;

@@ -21,6 +21,7 @@ c/posix4
 c/posix5
 c/hash_test
 
+venv/
 
 c/gmon*
 

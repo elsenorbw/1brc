@@ -8,8 +8,14 @@ CFLAGS = -W -Wall -O3
 
 HASH_TEST_OBJS = hash_test.o hash.o set.o 
 
+
 mutex: mutex.c hash.o
 	gcc -W -Wall -O3 -o mutex mutex.c hash.o 
+
+
+mutex10: mutex.c hash.o
+	gcc -W -Wall -O3 -D THREADS=10 -o mutex10 mutex.c hash.o 
+
 
 
 testmutex: mutex

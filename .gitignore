@@ -3,6 +3,7 @@
 *.beam
 *.svg
 *.old
+*.json
 
 1brc-from-internet/
 
@@ -19,6 +20,7 @@ c/posix3
 c/posix3-dbg
 c/posix4
 c/posix5
+c/mutex[0-9]*
 c/mutex
 c/hash_test
 

@@ -46,7 +46,10 @@
 #define MEGABYTE (1024 * 1024)
 #define BLOCK_SIZE (128 * 1024)
 
+
+#ifndef THREADS
 #define THREADS 16 
+#endif
 
 
 typedef struct _somenode {
@@ -679,6 +682,7 @@ int main(int argc, char *argv[])
     filename = argv[1];
   }
   //printf("Input file: %s\n", filename);
+  fprintf(stderr, "info: Going to use %d child threads\n", THREADS);
 
   // Process the file for the result
   process_file(filename);

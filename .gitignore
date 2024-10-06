@@ -1,7 +1,7 @@
 *.txt
 *.o
 *.beam
-
+*.svg
 *.old
 
 1brc-from-internet/
@@ -19,13 +19,16 @@ c/posix3
 c/posix3-dbg
 c/posix4
 c/posix5
+c/mutex
 c/hash_test
 
 venv/
+FlameGraph/
 
 c/gmon*
 
 perf.data
+out.perf-folded
 
 callgrind.out.*
 

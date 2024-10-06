@@ -8,6 +8,15 @@ CFLAGS = -W -Wall -O3
 
 HASH_TEST_OBJS = hash_test.o hash.o set.o 
 
+mutex: mutex.c hash.o
+	gcc -W -Wall -O3 -o mutex mutex.c hash.o 
+
+
+testmutex: mutex
+	time ./mutex | tee answer-mutex.txt
+	hexdump -C answer-mutex.txt > answer-mutex-hex.txt
+
+
 hash_test: $(HASH_TEST_OBJS)
 	$(CC) $(CFLAGS) $(HASH_TEST_OBJS) -o $@
 	./$@
@@ -117,6 +126,18 @@ testp2: posix2
 	hexdump -C answer-posix2.txt > answer-posix2-hex.txt
 
 test: test1 test2 test3
+
+
+flamep4: posix4
+	sudo perf record -F 99 -g -- ./posix4
+	sudo chown bmw:bmw perf.data
+	perf script | FlameGraph/stackcollapse-perf.pl > out.perf-folded
+	FlameGraph/flamegraph.pl out.perf-folded > perf-posix4.svg
+
+
+obtain_flamegraph_software:
+	git clone https://github.com/brendangregg/FlameGraph
+
 
 %.o : %.c
 	$(CC) -c $(CFLAGS) $< -o $@

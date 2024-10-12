@@ -2,7 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+/* Seriously, Apple... */
+#ifdef __APPLE__
+#include <dispatch/dispatch.h>
+#else
 #include <semaphore.h>
+#endif 
 
 #if THREAD_SLEEPING
 #include <time.h>
@@ -71,8 +77,13 @@ typedef struct _tis {
   TempCountNode *Summary[256*256];
   pthread_t ThreadHandle;
   int ThreadAllocated;
+#ifdef __APPLE__
+  dispatch_semaphore_t ReadyToStart;
+  dispatch_semaphore_t DoneProcessing;
+#else
   sem_t ReadyToStart;
   sem_t DoneProcessing;
+#endif
   int ThreadMode;
 } ThreadInfoSpace;
 
@@ -343,13 +354,18 @@ void *ThreadOrchestrator(void *Info)
   while(SUCCESS == ErrorStatus && !Done)
   {
     // Wait for the ready to start flag 
+#ifdef __APPLE__
+
+        dispatch_semaphore_wait(ThreadInfo[NextThreadIndex]->ReadyToStart, DISPATCH_TIME_FOREVER); 
+
+#else
     int WaitResult = sem_wait(&ThreadInfo->ReadyToStart);
     if(0 != WaitResult)
     {
        fprintf(stderr, "error: unable to wait for ReadyToStart semaphore because %d\n", WaitResult);
        ErrorStatus = CANNOT_WAIT_READYTOSTART;
     }
-
+#endif
 
     // See what we're doing with the value 
 #if THREAD_SLEEPING
@@ -366,12 +382,16 @@ void *ThreadOrchestrator(void *Info)
     }
 
     // Signal back that we're done
+#ifdef __APPLE__
+    dispatch_semaphore_signal(ThreadInfo->DoneProcessing);
+#else
     int PostResult = sem_post(&ThreadInfo->DoneProcessing);
     if(0 != PostResult)
     {
        fprintf(stderr, "error: unable to increment DoneProcessing flag because %d\n", PostResult);
        ErrorStatus = CANNOT_INCREMENT_DONEPROCESSING;
     }
+#endif
 
     // And maybe sleep ?? Seems counter productive but maybe 
 #if THREAD_SLEEPING
@@ -516,6 +536,12 @@ int process_file(const char *filename)
         {
 //          fprintf(stderr, "interesting: able to allocate buffer[%zu] for %zu bytes\n", i, sizeof **ThreadInfo);/g
           memset(ThreadInfo[i]->Buf, 0, BLOCK_SIZE);
+#ifdef __APPLE__
+          ThreadInfo[i]->ReadyToStart = dispatch_semaphore_create(0);
+          ThreadInfo[i]->DoneProcessing = dispatch_semaphore_create(0);
+          ThreadInfo[i]->ThreadMode = THREADMODE_UNSET;
+#else
+
           int SemaphoreInitResult = sem_init(&ThreadInfo[i]->ReadyToStart, 0, 0);
           int SemaphoreInitResult2 = sem_init(&ThreadInfo[i]->DoneProcessing, 0, 0);
           if(0 != SemaphoreInitResult || 0 != SemaphoreInitResult2)
@@ -528,6 +554,7 @@ int process_file(const char *filename)
             // Currently we're in no kind of a mode
             ThreadInfo[i]->ThreadMode = THREADMODE_UNSET;
           }
+#endif
         }
       }
     }
@@ -573,12 +600,18 @@ int process_file(const char *filename)
         }
 
         // Release the semaphore
+#ifdef __APPLE__
+
+        dispatch_semaphore_signal(ThreadInfo[NextThreadIndex]->ReadyToStart);
+
+#else
         int KickOffResult = sem_post(&ThreadInfo[NextThreadIndex]->ReadyToStart);
         if(0 != KickOffResult)
         {
           fprintf(stderr, "error: unable to kickoff thread %zu because %d\n", NextThreadIndex, KickOffResult);
           ErrorStatus = CANNOT_KICKOFF_THREAD;
         }
+#endif
 
       }
       else
@@ -586,13 +619,18 @@ int process_file(const char *filename)
         // We have a running thread, we just need to make sure that we wait for it to finish the current work it is doing
         
         // Wait for the thread to be done processing 
+#ifdef __APPLE__
+
+        dispatch_semaphore_wait(ThreadInfo[NextThreadIndex]->DoneProcessing, DISPATCH_TIME_FOREVER); 
+
+#else
         int WaitResult = sem_wait(&ThreadInfo[NextThreadIndex]->DoneProcessing);
         if(0 != WaitResult)
         {
           fprintf(stderr, "error: unable to wait for DoneProcessing on thread %zu because %d\n", NextThreadIndex, WaitResult);
           ErrorStatus = CANNOT_WAIT_FOR_THREAD;
         }
-
+#endif
 
         // Copy in the data we need and set the status 
         size_t BytesInBlock = EndOfBlock - Buf;
@@ -603,12 +641,16 @@ int process_file(const char *filename)
         ThreadInfo[NextThreadIndex]->ThreadMode = THREADMODE_READY_TO_PROCESS;
       
         // Release the semaphore
+#ifdef __APPLE__
+        dispatch_semaphore_signal(ThreadInfo[NextThreadIndex]->ReadyToStart);
+#else
         int KickOffResult = sem_post(&ThreadInfo[NextThreadIndex]->ReadyToStart);
         if(0 != KickOffResult)
         {
           fprintf(stderr, "error: unable to kickoff thread %zu because %d\n", NextThreadIndex, KickOffResult);
           ErrorStatus = CANNOT_KICKOFF_THREAD;
         }
+#endif
       }
 
       // And copy back the remaining bytes
@@ -629,21 +671,30 @@ int process_file(const char *filename)
   // Tell all the threads to finish..
   for(size_t i = 0; i < sizeof ThreadInfo / sizeof *ThreadInfo; ++i)
   {
+#ifdef __APPLE__
+
+        dispatch_semaphore_wait(ThreadInfo[i]->DoneProcessing, DISPATCH_TIME_FOREVER); 
+
+#else
         int WaitResult = sem_wait(&ThreadInfo[i]->DoneProcessing);
         if(0 != WaitResult)
         {
           fprintf(stderr, "error: unable to wait for DoneProcessing on thread %zu because %d\n", i, WaitResult);
           ErrorStatus = CANNOT_WAIT_FOR_THREAD;
         }
-
+#endif
         ThreadInfo[i]->ThreadMode = THREADMODE_TIME_TO_DIE;
 
+#ifdef __APPLE__
+        dispatch_semaphore_signal(ThreadInfo[i]->ReadyToStart);
+#else
         int KickOffResult = sem_post(&ThreadInfo[i]->ReadyToStart);
         if(0 != KickOffResult)
         {
           fprintf(stderr, "error: unable to kickoff thread %zu because %d\n", i, KickOffResult);
           ErrorStatus = CANNOT_KICKOFF_THREAD;
         }
+#endif 
   }
 
   // Wait for all the threads to finish..

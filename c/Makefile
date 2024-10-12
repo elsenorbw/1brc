@@ -9,6 +9,9 @@ CFLAGS = -W -Wall -O3
 HASH_TEST_OBJS = hash_test.o hash.o set.o 
 
 
+semaphore: semaphore.c hash.o
+	$(CC) $(CFLAGS) -o $@ semaphore.c hash.o
+
 mutex: mutex.c hash.o
 	gcc -W -Wall -O3 -o mutex mutex.c hash.o 
 

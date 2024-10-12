@@ -23,6 +23,7 @@ c/posix5
 c/mutex[0-9]*
 c/mutex
 c/hash_test
+c/semaphore
 
 venv/
 FlameGraph/

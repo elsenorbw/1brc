@@ -356,7 +356,7 @@ void *ThreadOrchestrator(void *Info)
     // Wait for the ready to start flag 
 #ifdef __APPLE__
 
-        dispatch_semaphore_wait(ThreadInfo[NextThreadIndex]->ReadyToStart, DISPATCH_TIME_FOREVER); 
+        dispatch_semaphore_wait(ThreadInfo->ReadyToStart, DISPATCH_TIME_FOREVER); 
 
 #else
     int WaitResult = sem_wait(&ThreadInfo->ReadyToStart);
